@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sasha & Tima - 1 год вместе</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2c003e 0%, #4c105a 50%, #2c003e 100%);
+            min-height: 100vh;
+            color: #fff;
+            position: relative;
+            overflow-y: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        body.scroll-enabled {
+            overflow-y: auto;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(120, 0, 120, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(200, 0, 100, 0.3) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .welcome-container, .memory-container {
+            background: rgba(20, 0, 30, 0.7);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            margin: 40px auto;
+            border: 1px solid rgba(255, 105, 180, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-container::before, .memory-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            z-index: -1;
+            background: linear-gradient(45deg, #ff4d8d, #ff7eb3, #ff4d8d);
+            background-size: 400% 400%;
+            animation: glowing 3s ease infinite;
+            border-radius: 25px;
+            opacity: 0.3;
+        }
+
+        .wide-container {
+            max-width: 1000px !important;
+        }
+
+        .photo-frame {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 25px;
+            position: relative;
+        }
+
+        .profile-photo, .memory-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px #ff4d8d, 0 0 30px rgba(255, 77, 141, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .profile-photo:hover, .memory-photo:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            color: #ff7eb3;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            text-shadow: 0 0 10px rgba(255, 126, 179, 0.5);
+        }
+
+        h2 {
+            color: #ff7eb3;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: #f8c6dc;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .cta-button, .nav-button {
+            background: linear-gradient(to right, #ff4d8d, #ff7eb3);
+            border: none;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 126, 179, 0.3);
+        }
+
+        .cta-button:hover, .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 126, 179, 0.5);
+        }
+
+        .cta-button:active, .nav-button:active {
+            transform: translateY(1px);
+        }
+
+        .hearts {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            animation: fall 5s linear infinite;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: linear-gradient(to right, #ff4d8d, #ff7eb3);
+            width: 0%;
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        .page-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(20, 0, 30, 0.7);
+            color: #ff7eb3;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 105, 180, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .collage {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-bottom: 15px;
+        }
+
+        .collage img {
+            height: 180px;
+            border-radius: 15px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .collage img:hover {
+            transform: scale(1.05);
+        }
+
+        video {
+            max-width: 100%;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .memory-text {
+            background: rgba(255, 126, 179, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #ff7eb3;
+        }
+
+        /* Стили для выравнивания фотографий */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .photo-grid img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-grid img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Стили для финальной страницы */
+        .final-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .final-photo {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 6px solid rgba(255, 126, 179, 0.3);
+            box-shadow: 0 0 30px rgba(255, 77, 141, 0.7);
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        .final-text {
+            background: rgba(20, 0, 30, 0.8);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .final-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ff7eb3;
+            text-shadow: 0 0 15px rgba(255, 126, 179, 0.7);
+        }
+
+        .final-message {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            color: #f8c6dc;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 30px rgba(255, 77, 141, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(255, 77, 141, 0.9); }
+            100% { transform: scale(1); box-shadow: 0 0 30px rgba(255, 77, 141, 0.7); }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .welcome-container, .memory-container {
+                padding: 25px;
+                margin: 20px auto;
+            }
+            
+            .wide-container {
+                max-width: 95% !important;
+            }
+            
+            .photo-frame {
+                width: 150px;
+                height: 150px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .collage {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .collage img {
+                width: 100%;
+                height: auto;
+                max-width: 300px;
+            }
+            
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .photo-grid img {
+                height: 150px;
+            }
+            
+            .cta-button, .nav-button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .final-photo {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .final-title {
+                font-size: 2rem;
+            }
+            
+            .final-message {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .photo-grid img {
+                height: 200px;
+            }
+            
+            .final-photo {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .final-title {
+                font-size: 1.8rem;
+            }
+            
+            .final-text {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progress-bar"></div>
+    <div class="stars" id="stars-container"></div>
+    <div class="hearts" id="hearts-container"></div>
+    <div class="page-counter" id="page-counter">1/11</div>
+
+    <!-- Страница приветствия -->
+    <div id="page-0" class="page active">
+        <div class="welcome-container">
+            <div class="photo-frame">
+                <img src="media/prewu.jpg" alt="Наше фото" class="profile-photo" onerror="this.src='https://placehold.co/200x200/4c105a/white?text=Sasha+%26+Tima'">
+            </div>
+            <h1>Sasha & Tima forever</h1>
+            <p>Loveu so much! 💋❤️</p>
+            <button class="cta-button" onclick="nextPage()">Открыть нашу историю</button>
+        </div>
+    </div>
+
+    <!-- Первая память -->
+    <div id="page-1" class="page">
+        <div class="memory-container">
+            <div class="photo-frame">
+                <img src="media/photo1.jpg" class="memory-photo" onerror="this.src='https://placehold.co/200x200/4c105a/white?text=09.09.2024'">
+            </div>
+            <h2>09.09.2024</h2>
+            <div class="memory-text">
+                <p>Наша первая фотография и прогулка. Помню, как волновался и пытался выглядеть лучше всего, хотя получилось немного глуповато 😊 Но это наша история, и она прекрасна!</p>
+            </div>
+            <button class="nav-button" onclick="prevPage()">Назад</button>
+            <button class="nav-button" onclick="nextPage()">Вперёд</button>
+        </div>
+    </div>
+
+    <!-- Вторая память -->
+    <div id="page-2" class="page">
+        <div class="memory-container">
+            <div class="photo-frame">
+                <img src="media/photo2.jpg" class="memory-photo" onerror="this.src='https://placehold.co/200x200/4c105a/white?text=12.11.2024'">
+            </div>
+            <h2>12.11.2024</h2>
+            <div class="memory-text">
+                <p>Ночевка у Полки. Это была самая волшебная ночь, словно попал в сказку. Теплота, уют и наше первое настоящее сближение. Ты сделала этот вечер незабываемым!</p>
+            </div>
+            <button class="nav-button" onclick="prevPage()">Назад</button>
+            <button class="nav-button" onclick="nextPage()">Вперёд</button>
+        </div>
+    </div>
+
+    <!-- Третья память -->
+    <div id="page-3" class="page">
+        <div class="memory-container">
+            
+            <h2>Прогулки в Сегеже</h2>
+            <div class="memory-text">
+                <p>С большой теплотой вспоминаю наши гулянки в Сегеже. Ты первая девушка в моей жизни, с которой можно было так легко общаться и гулять вдвоём. Спасибо за такое уютное и приятное общение!</p>
+            </div>
+            <button class="nav-button" onclick="prevPage()">Назад</button>
+            <button class="nav-button" onclick="nextPage()">Вперёд</button>
+        </div>
+    </div>
+
+    <!-- Четвертая память (3 видео) -->
+    <div id="page-4" class="page">
+        <div class="memory-container wide-container">
+            <h2>Наши первые тик-токи</h2>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb1.jpg">
+                    <source src="media/tiktok1.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb2.jpg">
+                    <source src="media/tiktok2.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb3.jpg">
+                    <source src="media/tiktok3.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+            </div>
+            <div style="text-align: center;">
+                <button class="nav-button" onclick="prevPage()">Назад</button>
+                <button class="nav-button" onclick="nextPage()">Вперёд</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пятая память (коллаж + видео) -->
+    <div id="page-5" class="page">
+        <div class="memory-container wide-container">
+            <h2>Ещё моменты из Сегежи</h2>
+            <div class="memory-text">
+                <p>Каждый момент с тобой - это маленькое приключение, которое хочется помнить вечно.</p>
+            </div>
+            <div class="collage">
+                <img src="media/seg1.jpg" alt="Фото 1" onerror="this.style.display='none'">
+                <img src="media/seg2.jpg" alt="Фото 2" onerror="this.style.display='none'">
+                <img src="media/seg3.jpg" alt="Фото 3" onerror="this.style.display='none'">
+                <img src="media/seg4.jpg" alt="Фото 4" onerror="this.style.display='none'">
+            </div>
+            <video controls poster="media/seg_thumb.jpg">
+                <source src="media/seg_video.mp4" type="video/mp4">
+                Ваш браузер не поддерживает видео.
+            </video>
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="nav-button" onclick="prevPage()">Назад</button>
+                <button class="nav-button" onclick="nextPage()">Вперёд</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Шестая память (расстояние) -->
+    <div id="page-6" class="page">
+        <div class="memory-container">
+            <h2>19.10.2024 - Расстояние 😢</h2>
+            <div class="memory-text">
+                <p>Период, когда было действительно тяжело. Море переживаний, стресса и других проблем. Но были и яркие моменты - классные разговоры, звонки и просто новый опыт для меня, первые отношения на расстоянии. Очень нравилось играть с тобой и болтать о разном, узнавать тебя ближе и раскрываться самому. Безумно рад, что мы справились, и уверен, что у нас всё будет хорошо до самого конца. Спасибо, что ты есть у меня! 💋</p>
+            </div>
+            <div style="text-align: center;">
+                <button class="nav-button" onclick="prevPage()">Назад</button>
+                <button class="nav-button" onclick="nextPage()">Вперёд</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Седьмая память (желание приехать) -->
+    <div id="page-7" class="page">
+        <div class="memory-container">
+            <h2>Моё желание приехать</h2>
+            <div class="memory-text">
+                <p>Решил я это сразу, как ты уехала. Искал разные способы заработать и очень переживал, успею ли накопить. Но я невероятно рад, что всё получилось, и я смог приехать! Очень жду следующей встречи!</p>
+            </div>
+            <div style="text-align: center;">
+                <button class="nav-button" onclick="prevPage()">Назад</button>
+                <button class="nav-button" onclick="nextPage()">Вперёд</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Восьмая память (поездка) -->
+    <div id="page-8" class="page">
+        <div class="memory-container">
+            <div class="photo-frame">
+                <img src="media/visit.jpg" class="memory-photo" onerror="this.src='https://placehold.co/200x200/4c105a/white?text=Встреча'">
+            </div>
+            <h2>Моя поездка к тебе</h2>
+            <div class="memory-text">
+                <p>я не мог в это поверить когда увидел тебя, каждый день проведенный с тобой был самым лучшим за это лето,в эти дни я был самым счастливым.Надеюсь тебе все понравилось. Спасибо за каждую прогулку — это было наше маленькое совместное приключение, наполненное спокойствием. Спасибо за то, что наши диалоги — это место, где я могу быть собой на 100%. Это дорогого стоит. За секс — С тобой я забываю обо всем. Спасибо за эти моменты полного безумия и наслаждения. Ты мой главный наркотик.Спасибо за то, что делаешь даже обычный ужин — особым событием, наполненным теплом и радостью.</p>
+            </div>
+            <button class="nav-button" onclick="prevPage()">Назад</button>
+            <button class="nav-button" onclick="nextPage()">Вперёд</button>
+        </div>
+    </div>
+
+    <!-- Девятая память (6 фотографий) -->
+    <div id="page-9" class="page">
+        <div class="memory-container wide-container">
+            <h1>Наши моменты в липецке❤️</h1>
+            <p>Самые теплые воспоминания за этот год</p>
+            
+            <div class="photo-grid">
+                <img src="media/memory1.jpg" alt="Воспоминание 1" onerror="this.src='https://placehold.co/300x200/4c105a/white?text=Memory+1'">
+                <img src="media/memory2.jpg" alt="Воспоминание 2" onerror="this.src='https://placehold.co/300x200/4c105a/white?text=Memory+2'">
+                <img src="media/memory3.jpg" alt="Воспоминание 3" onerror="this.src='https://placehold.co/300x200/4c105a/white?text=Memory+3'">
+                <img src="media/memory4.jpg" alt="Воспоминание 4" onerror="this.src='https://placehold.co/300x200/4c105a/white?text=Memory+4'">
+                <img src="media/memory5.jpg" alt="Воспоминание 5" onerror="this.src='https://placehold.co/300x200/4c105a/white?text=Memory+5'">
+                <img src="media/memory6.jpg" alt="Воспоминание 6" onerror="this.src='https://placehold.co/300x200/4c105a/white?text=Memory+6'">
+            </div>
+            
+            <button class="nav-button" onclick="prevPage()">Назад</button>
+            <button class="nav-button" onclick="nextPage()">Вперёд</button>
+        </div>
+    </div>
+    <!-- Четвертая память (3 видео) -->
+    <div id="page-10" class="page">
+        <div class="memory-container wide-container">
+            <h2>пару интересных видосов</h2>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb1.jpg">
+                    <source src="media/lip1.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb2.jpg">
+                    <source src="media/lip2.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb3.jpg">
+                    <source src="media/lip3.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <video controls style="width: 300px; border-radius: 15px;" poster="media/thumb3.jpg">
+                    <source src="media/lip4.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+            </div>
+            <div style="text-align: center;">
+                <button class="nav-button" onclick="prevPage()">Назад</button>
+                <button class="nav-button" onclick="nextPage()">Вперёд</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Десятая память (заключительная) -->
+    <div id="page-11" class="page">
+        <div class="welcome-container">
+            <div class="photo-frame">
+                <img src="media/together.jpg" alt="Наше фото" class="profile-photo" onerror="this.src='https://placehold.co/200x200/4c105a/white?text=Вместе+навсегда'">
+            </div>
+            <h1>С годовщиной, любимая! ❤️</h1>
+            <div class="memory-text">
+                <p>Спасибо тебе за этот невероятный год! За твою поддержку, понимание и любовь. Я счастлив, что ты в моей жизни, и с нетерпением жду нашего будущего вместе!</p>
+            </div>
+            <button class="nav-button" onclick="prevPage()">Назад</button>
+            <button class="cta-button" onclick="nextPage()">Конец</button>
+        </div>
+    </div>
+
+    <!-- Финальная страница -->
+    <div id="page-12" class="page">
+        <div class="final-container">
+            
+            <div class="final-text">
+                <h1 class="final-title">Навсегда вместе! ❤️</h1>
+                <p class="final-message">Спасибо за этот невероятный год, полный любви, смеха и незабываемых моментов. Ты - самое лучшее, что случилось со мной! Я бесконечно благодарен за каждый день, проведенный с тобой, и с нетерпением жду нашего будущего вместе. Люблю тебя больше всего на свете! 💕</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        const totalPages = 13; // 0-10
+
+        function showPage(index) {
+            document.querySelectorAll('.page').forEach((p, i) => {
+                p.classList.toggle('active', i === index);
+            });
+            currentPage = index;
+            window.scrollTo(0, 0);
+            
+            if (currentPage === 4 || currentPage === 5|| currentPage === 10|| currentPage === 8|| currentPage === 9 || currentPage === 12) {
+                document.body.classList.add('scroll-enabled');
+            } else {
+                document.body.classList.remove('scroll-enabled');
+            }
+            
+            const progress = (currentPage / (totalPages - 1)) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('page-counter').textContent = (currentPage + 1) + '/' + totalPages;
+            
+            if (index === 0 || index === 5 || index === 9 || index === 10) {
+                createHearts();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) showPage(currentPage + 1);
+        }
+
+        function prevPage() {
+            if (currentPage > 0) showPage(currentPage - 1);
+        }
+
+        function showFinale() {
+            // Скрываем все элементы
+            document.getElementById('progress-bar').style.display = 'none';
+            document.getElementById('page-counter').style.display = 'none';
+            document.getElementById('stars-container').style.display = 'none';
+            document.getElementById('hearts-container').style.display = 'none';
+            
+            // Показываем финальную страницу
+            showPage(totalPages - 1);
+            
+            // Создаем дополнительные сердца для финального экрана
+            createHearts();
+        }
+
+        function createStars() {
+            const stars = document.getElementById('stars-container');
+            for (let i = 0; i < 100; i++) {
+                const s = document.createElement('div');
+                s.classList.add('star');
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.width = s.style.height = (Math.random() * 3 + 1) + 'px';
+                s.style.animationDelay = Math.random() * 4 + 's';
+                stars.appendChild(s);
+            }
+        }
+        
+        function createHearts() {
+            const heartsContainer = document.getElementById('hearts-container');
+            heartsContainer.innerHTML = '';
+            
+            for (let i = 0; i < 21; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 5 + 's';
+                heart.style.color = ['#ff4d8d', '#ff7eb3', '#ff9ec7'][Math.floor(Math.random() * 3)];
+                heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+                heartsContainer.appendChild(heart);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') prevPage();
+        });
+
+        window.onload = function() {
+            createStars();
+            createHearts();
+            showPage(0);
+        };
+    </script>
+</body>
+</html>
